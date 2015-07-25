@@ -1,0 +1,456 @@
+#!/bin/bash
+
+# Author = "Abhijit Maity"
+# Last Update Date = "23-Jul-2015"
+
+echo "Enter IP Range filename with path"
+read file
+
+l=`wc -l $file| cut -d " " -f1`
+
+equal_case () {
+			find=1
+			if [ "$j" == 1 ]
+			then
+				part=$p1
+			else
+				part=$part"\."$p1
+			fi
+}
+
+extreme_case () {
+			find=1
+			if [ "$j" == 1 ]
+                        then
+                        part=$p1
+                        else
+                        part=$part"\.\d+"
+                        fi
+}
+
+one_digit () {
+				find=1
+				part="(["$p1"-"$p2"])"
+}
+
+two_digit () {
+				find=1
+				k1=${p1:0:1}
+				k2=${p1:1:1}
+				k3=${p2:0:1}
+				k4=${p2:1:1}
+				f=1
+
+				if [ "$k1" == "$k3" ]
+				then
+					part=$k1"["$k2"-"$k4"]"
+				else
+					if [ "$k4" != "0" ]
+					then
+						t1=`expr "$k1" + "$f"`
+						t2=`expr "$k3" - "$f"`
+						if [ "$t1" == "$t2" ]
+						then
+                                                        if [ "$k2" != "0" ]
+                                                        then
+								if [ "$k4" == "9" ]
+                                                                then
+									part="("$k1"["$k2"-9])|(["$t1"-"$k3"][0-9])"
+								else
+									part="("$k1"["$k2"-9])|("$t1"[0-9])|("$k3"[0-"$k4"])"
+								fi
+							else
+								if [ "$k4" == "9" ]
+								then
+                                                                	part="(["$k1"-"$k3"][0-9])"
+								else
+									part="(["$k1"-"$t1"][0-9])|("$k3"[0-"$k4"])"
+								fi
+							fi
+						elif [ "$k1" != "$t2" ]
+						then
+							if [ "$k2" != "0" ]
+                                                        then
+								if [ "$k4" == "9" ]
+                                                                then
+                                                                        part="("$k1"["$k2"-9])|(["$t1"-"$k3"][0-9])"
+								else
+									part="("$k1"["$k2"-9])|(["$t1"-"$t2"][0-9])|("$k3"[0-"$k4"])"
+								fi
+							else
+								if [ "$k4" == "9" ]
+								then
+									part="(["$k1"-"$k3"][0-9])"
+								else
+									part="("$k1"-"$t2"][0-9])|("$k3"[0-"$k4"])"
+								fi
+							fi
+						else
+							if [ "$k4" == "9" -a "$k2" == "0" ]
+                                                        then
+	                                                        part="(["$k1"-"$k3"][0-9])"
+							else
+								part="("$k1"["$k2"-9])|("$k3"[0-"$k4"])"
+							fi
+						fi
+					else
+                                                t1=`expr "$k1" + "$f"`
+                                                t2=`expr "$k3" - "$f"`
+
+                                                if [ "$t1" == "$t2" ]
+                                                then
+							if [ "$k2" != "0" ]
+							then
+                                                        	part="("$k1"["$k2"-9])|("$t1"[0-9])|("$k3"0)"
+							else
+								part="(["$k1"-"$t1"][0-9])|("$k3"0)"
+							fi
+                                                elif [ "$k1" != "$t2" ]
+						then
+							if [ "$k2" != "0" ]
+                                                        then
+                                                        part="("$k1"["$k2"-9])|(["$t1"-"$t2"][0-9])|("$k3"0)"
+							else
+							part="(["$k1"-"$t2"][0-9])|("$k3"0)"
+							fi
+                                                else
+							part="("$k1"["$k2"-9])|("$k3"0)"
+						fi
+					fi
+				fi
+}
+
+three_digit () {
+				find=1
+                                k1=${p1:0:1}
+                                k2=${p1:1:1}
+                                k3=${p1:2:1}
+                                k4=${p2:0:1}
+				k5=${p2:1:1}
+                                k6=${p2:2:1}
+
+                                f=1
+				if [ "$k1" == "$k4" ]
+				then
+
+					dd="1"
+					k1=${p1:0:2}
+					k2=$k3
+					k3=${p2:0:2}
+					k4=$k6
+
+					if [ "$k1" == "$k3" ]
+					then
+					part="("$k1"["$k2"-"$k4"])"
+					else
+						if [ "$k4" != "0" ]
+						then
+							t1=`expr "$k1" + "$f"`
+							t2=`expr "$k3" - "$f"`
+							if [ "$t1" == "$t2" ]
+							then
+                                                        	if [ "$k2" != "0" ]
+                                                        	then
+									k1=${p1:0:1}
+                                                                        k2=${p1:1:1}
+                                                                        k3=${p1:2:1}
+                                                                        k4=${p2:0:1}
+                                                                        k5=${p2:1:1}
+                                                                        k6=${p2:2:1}
+
+                                                                        k7=${p1:0:2}
+
+                                                                        t1=`expr "$k2" + "$f"`
+                                                                        t2=`expr "$k5" - "$f"`
+
+                                                                        if [ "$k6" == "9" ]
+                                                                        then
+                                                                                part="("$k7"["$k3"-9])|("$k1"["$t1"-"$k5"][0-9])"
+                                                                        else
+										part="("$k7"["$k3"-9])|("$k1$t1"[0-9])|("$k1$k5"[0-"$k6"])"
+									fi
+								else
+					                                k1=${p1:0:1}
+                                					k2=${p1:1:1}
+                                					k3=${p1:2:1}
+                                					k4=${p2:0:1}
+                                					k5=${p2:1:1}
+                                					k6=${p2:2:1}
+
+									k7=${p2:0:2}
+
+                		                                        t1=`expr "$k2" + "$f"`
+		                                                        t2=`expr "$k5" - "$f"`
+
+									if [ "$k6" == "9" ]
+									then
+										part="("$k1"["$k2"-"$k5"][0-9])"
+									else
+										part="("$k1"["$k2"-"$t2"][0-9])|("$k7"[0-"$k6"])"
+									fi
+								fi
+							elif [ "$k1" != "$t2" ]
+							then
+								if [ "$k2" != "0" ]
+                                                        	then
+									k1=${p1:0:1}
+                                                                        k2=${p1:1:1}
+                                                                        k3=${p1:2:1}
+                                                                        k4=${p2:0:1}
+                                                                        k5=${p2:1:1}
+                                                                        k6=${p2:2:1}
+
+                                                                        k7=${p1:0:2}
+
+                                                                        t1=`expr "$k2" + "$f"`
+                                                                        t2=`expr "$k5" - "$f"`
+
+                                                                        if [ "$k6" == "9" ]
+                                                                        then
+										part="("$k7"["$k3"-9])|("$k1"["$t1"-"$k5"][0-9])"
+                                                                        else
+										part="("$k7"["$k3"-9])|("$k1"["$t1"-"$t2"][0-9])|("$k1$k5"[0-"$k6"])"
+									fi
+								else
+                                                                        k1=${p1:0:1}
+                                                                        k2=${p1:1:1}
+                                                                        k3=${p1:2:1}
+                                                                        k4=${p2:0:1}
+                                                                        k5=${p2:1:1}
+                                                                        k6=${p2:2:1}
+
+                                                                        k7=${p2:0:2}
+
+                                                                        t1=`expr "$k2" + "$f"`
+                                                                        t2=`expr "$k5" - "$f"`
+
+									if [ "$k6" == "9" ]
+                                                                        then
+                                                                        	part="("$k1"["$k2"-"$k5"][0-9])"
+									else
+										part="("$k1"["$k2"-"$t2"][0-9])|("$k7"[0-"$k6"])"
+									fi
+								fi
+							else
+								part="("$k1"["$k2"-9])|("$k3"[0-"$k4"])"
+							fi
+						else
+                                                	t1=`expr "$k1" + "$f"`
+                                                	t2=`expr "$k3" - "$f"`
+
+                                                	if [ "$t1" == "$t2" ]
+                                                	then
+								if [ "$k2" != "0" ]
+								then
+                                                        		part="("$k1"["$k2"-9])|("$t1"[0-9])|("$k3"0)"
+								else
+                                                                        k1=${p1:0:1}
+                                                                        k2=${p1:1:1}
+                                                                        k3=${p1:2:1}
+                                                                        k4=${p2:0:1}
+                                                                        k5=${p2:1:1}
+                                                                        k6=${p2:2:1}
+
+                                                                        k7=${p2:0:2}
+
+                                                                        t1=`expr "$k2" + "$f"`
+                                                                        t2=`expr "$k5" - "$f"`
+
+									part="("$k1"["$k2"-"$t2"][0-9])|("$k7"0)"
+								fi
+                                                	elif [ "$k1" != "$t2" ]
+							then
+								if [ "$k2" != "0" ]
+                                                        	then
+                                                        		part="("$k1"["$k2"-9])|(["$t1"-"$t2"][0-9])|("$k3"0)"
+								else
+                                                                        k1=${p1:0:1}
+                                                                        k2=${p1:1:1}
+                                                                        k3=${p1:2:1}
+                                                                        k4=${p2:0:1}
+                                                                        k5=${p2:1:1}
+                                                                        k6=${p2:2:1}
+
+                                                                        k7=${p2:0:2}
+
+                                                                        t1=`expr "$k2" + "$f"`
+                                                                        t2=`expr "$k5" - "$f"`
+
+									part="("$k1"["$k2"-"$t2"][0-9])|("$k7"0)"
+								fi
+                                                	else
+								part="("$k1"["$k2"-9])|("$k3"0)"
+							fi
+						fi
+					fi
+				else
+					find=0
+					dd="2"
+					cpy=$p2
+					p2="199"
+					if [ "$p1" == "$p2" ]
+                                        then
+						find=1
+						part="("$p1")"
+					fi
+
+					if [ "$find" == "0" ]
+					then
+						three_digit
+					fi
+
+			                p1=`echo $ip1 | cut -d "." -f$j`
+                			p2=`echo $ip2 | cut -d "." -f$j`
+
+					if [ "${#p1}" == "3" -a "${#p2}" == "3" ]
+					then
+					regex=$regex"\.("$part
+					else
+					regex=$regex"|"$part
+					fi
+
+					find=0
+					p1="200"
+					p2=$cpy
+
+                                        if [ "$p1" == "$p2" ]
+                                        then
+                                                find=1
+                                                part="("$p1")"
+                                        fi
+
+					if [ "$find" == "0" ]
+					then
+						three_digit
+					fi
+
+					dd="2"
+					if [ "${#p1}" == "3" -a "${#p2}" == "3" ]
+                                        then
+					regex=$regex"|"$part")"
+					else
+					regex=$regex"|"$part
+					fi
+				fi
+}
+
+for (( i=1 ; i <= $l ; i++ ))
+do
+        s=`sed -n ''$i'p' $file`
+        ip1=`echo $s | grep -Po "\d+\.\d+\.\d+\.\d+" | sed -n 1p`
+	ip2=`echo $s | grep -Po "\d+\.\d+\.\d+\.\d+" | sed -n 2p`
+
+	regex=""
+
+	for (( j=1 ; j <= 4 ; j++ ))
+	do
+		part=""
+		find=0
+		p1=`echo $ip1 | cut -d "." -f$j`
+		p2=`echo $ip2 | cut -d "." -f$j`
+
+		if [ "$p1" == "$p2" ]
+		then
+			equal_case
+			regex=$regex$part
+		fi
+
+		if [ "$find" != "1" ]
+		then
+		if [ "$p1" == "0" -a "$p2" == "255" ]
+		then
+			extreme_case
+			regex=$regex$part
+		fi
+		fi
+
+		if [ "$find" != "1" ]
+		then
+		if [ "${#p1}" == "${#p2}"  ]
+		then
+			if [ "${#p1}" == "1" ]
+			then
+				one_digit
+				regex=$regex"\.("$part")"
+			fi
+
+			if [ "${#p1}" == "2" ]
+			then
+				two_digit
+				regex=$regex"\.("$part")"
+			fi
+
+			if [ "${#p1}" == "3" ]
+                        then
+				three_digit
+
+				if [ "$dd" == "1" ]
+				then
+				regex=$regex"\.("$part")"
+				fi
+			fi
+		fi
+
+		if [ "${#p1}" == "1" -a "${#p2}" == "2" ]
+		then
+		find=0
+		cpy=$p2
+		p2="9"
+		one_digit
+		regex=$regex"\.("$part
+
+		part=""
+		find=0
+		p1="10"
+		p2=$cpy
+		two_digit
+		regex=$regex"|"$part")"
+		fi
+
+                if [ "${#p1}" == "1" -a "${#p2}" == "3" ]
+                then
+                find=0
+                cpy=$p2
+                p2="9"
+
+                one_digit
+                regex=$regex"\.("$part
+
+		part=""
+		find=0
+		p1="10"
+		p2="99"
+		two_digit
+		regex=$regex"|"$part
+
+		part=""
+		find=0
+                p1="100"
+                p2=$cpy
+                three_digit
+
+		regex=$regex"|"$part")"
+                fi
+
+		if [ "${#p1}" == "2" -a "${#p2}" == "3" ]
+                then
+                find=0
+                cpy=$p2
+                p2="99"
+
+                two_digit
+                regex=$regex"\.("$part
+
+                part=""
+                find=0
+                p1="100"
+                p2=$cpy
+
+                three_digit
+		regex=$regex"|"$part")"
+		fi
+		fi
+	done
+
+	echo $regex
+done
